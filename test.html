@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Sample</title>
+    <style>
+        header {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        td button {
+            margin: 0 5px;
+            padding: 6px 10px;
+            font-size: 0.9em;
+        }
+
+        td button:nth-child(1) {
+            background-color: #28a745;
+            /* Green for Edit */
+        }
+
+        td button:nth-child(1):hover {
+            background-color: #1e7e34;
+        }
+
+        td button:nth-child(2) {
+            background-color: #dc3545;
+            /* Red for Delete */
+        }
+
+        td button:nth-child(2):hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <header>PRODUCTS INFORMATION CRUD</header><br>
+    <form id="userform">
+        <input type="text" placeholder="Enter your product Name" id="name" required>
+        <input type="text" placeholder="Enter your product Price " id="email" required>
+        <button type="submit">Submit</button>
+    </form>
+    <br>
+    <table id="table" border="1">
+        <thead>
+            <tr>
+                <th>Product ID</th>
+                <th>Product Price<sub> (In dollars)</sub></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const userform = document.getElementById('userform');
+        const nameinput = document.getElementById('name');
+        const emailinput = document.getElementById('email');
+        const usertablebody = document.querySelector('#table tbody');
+
+        let users = [];
+        let editIndex = null;
+
+        userform.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = nameinput.value.trim();
+            const price = emailinput.value.trim();
+
+            if (editIndex === null) {
+                users.push({ name, price });
+            } else {
+                users[editIndex] = { name, price };
+                editIndex = null;
+            }
+
+            userform.reset();
+            renderTable();
+        });
+
+        function renderTable() {
+            usertablebody.innerHTML = '';
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.price}$</td>
+                    <td>
+                        <button onclick="editUser(${index})">Edit</button>
+                        <button onclick="deleteUser(${index})">Delete</button>
+                    </td>
+                `;
+                usertablebody.appendChild(row);
+            });
+        }
+
+        window.editUser = function (index) {
+            const user = users[index];
+            nameinput.value = user.name;
+            emailinput.value = user.price;
+            editIndex = index;
+        };
+
+        window.deleteUser = function (index) {
+            users.splice(index, 1);
+            renderTable();
+        };
+    </script>
+</body>
+
+</html>
