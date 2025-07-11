@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile Card Creator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f0f2f5, #dbe4f3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      color: #2b2b2b;
+      margin-bottom: 1rem;
+    }
+
+    .profile-form {
+      width: 100%;
+      max-width: 500px;
+      background: #ffffffcc;
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-form input,
+    .profile-form select,
+    .profile-form button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .profile-form button {
+      background: #0055ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .profile-form button:hover {
+      background: #003ecc;
+    }
+
+    .cards-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+      width: 100%;
+    }
+
+    .profile-box {
+      width: 280px;
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: 0.3s ease;
+      padding: 16px;
+    }
+
+    .profile-box.dark-mode {
+      background: #2e2e2e;
+      color: #fff;
+    }
+
+    .profile-box img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      transition: 0.3s;
+      border: 4px solid #ccc;
+    }
+
+    .square-img img {
+      border-radius: 0;
+    }
+
+    .rounded-img img {
+      border-radius: 15px;
+    }
+
+    .circle-img img {
+      border-radius: 50%;
+    }
+
+    .profile-box h3 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .profile-box p {
+      font-size: 0.95rem;
+      margin: 8px 0 16px;
+    }
+
+    .card-actions button {
+      margin: 6px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background: #ffa726;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #e53935;
+      color: white;
+    }
+
+    .theme-btn {
+      background: #19ffff;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      .profile-form {
+        padding: 15px;
+      }
+
+      .profile-box {
+        width: 90%;
+      }
+
+      .profile-box img {
+        width: 80px;
+        height: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Build Your Profile Card</h2>
+
+  <form class="profile-form" id="profileForm">
+    <input type="text" id="userName" placeholder="Full Name" required />
+    <input type="text" id="userBio" placeholder="Short Bio" required />
+    <input type="file" id="userImage" accept="image/*" required />
+    <select id="imgBorder">
+      <option value="square-img">Square</option>
+      <option value="rounded-img">Rounded</option>
+      <option value="circle-img">Circle</option>
+    </select>
+    <button type="submit">Create / Update</button>
+  </form>
+
+  <div class="cards-wrapper" id="cardsWrapper"></div>
+
+  <script>
+    const form = document.getElementById('profileForm');
+    const wrapper = document.getElementById('cardsWrapper');
+    const nameField = document.getElementById('userName');
+    const bioField = document.getElementById('userBio');
+    const imageField = document.getElementById('userImage');
+    const borderSelect = document.getElementById('imgBorder');
+
+    let profiles = [];
+    let editingIndex = null;
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const name = nameField.value.trim();
+      const bio = bioField.value.trim();
+      const borderClass = borderSelect.value;
+      const file = imageField.files[0];
+
+      if (!name || !bio) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const image = reader.result;
+        const data = {
+          name,
+          bio,
+          image,
+          borderClass,
+          theme: 'light'
+        };
+
+        if (editingIndex === null) {
+          profiles.push(data);
+        } else {
+          profiles[editingIndex] = data;
+          editingIndex = null;
+        }
+
+        form.reset();
+        renderProfiles();
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      } else if (editingIndex !== null) {
+        const data = profiles[editingIndex];
+        const updated = {
+          name,
+          bio,
+          image: data.image,
+          borderClass,
+          theme: data.theme
+        };
+        profiles[editingIndex] = updated;
+        editingIndex = null;
+        form.reset();
+        renderProfiles();
+      }
+    });
+
+    function renderProfiles() {
+      wrapper.innerHTML = '';
+      profiles.forEach((profile, index) => {
+        const card = document.createElement('div');
+        card.className = `profile-box ${profile.theme === 'dark' ? 'dark-mode' : ''} ${profile.borderClass}`;
+        card.innerHTML = `
+          <img src="${profile.image}" alt="Profile Image">
+          <h3>${profile.name}</h3>
+          <p>${profile.bio}</p>
+          <div class="card-actions">
+            <button class="edit-btn" onclick="editProfile(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteProfile(${index})">Delete</button>
+            <button class="theme-btn" onclick="toggleTheme(${index})">Change Theme</button>
+          </div>
+        `;
+        wrapper.appendChild(card);
+      });
+    }
+
+    window.editProfile = function(index) {
+      const user = profiles[index];
+      nameField.value = user.name;
+      bioField.value = user.bio;
+      borderSelect.value = user.borderClass;
+      editingIndex = index;
+    };
+
+    window.deleteProfile = function(index) {
+      profiles.splice(index, 1);
+      renderProfiles();
+    };
+
+    window.toggleTheme = function(index) {
+      profiles[index].theme = profiles[index].theme === 'light' ? 'dark' : 'light';
+      renderProfiles();
+    };
+  </script>
+
+</body>
+</html>
